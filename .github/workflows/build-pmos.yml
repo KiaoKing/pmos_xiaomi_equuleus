@@ -101,6 +101,8 @@ jobs:
         pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg update
         pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg pull
 
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg zap -hc
+
     - name: Build postmarketOS
       env:
         CI: "true"
