@@ -115,7 +115,7 @@ jobs:
       env:
         CI: "true"
       run: |
-        pmbootstrap --as-root install --password=147147
+        pmbootstrap --as-root install --password=147147 || (cat /tmp/pmbootstrap/log.txt && exit 1)
 
     - name: Export images
       run: |
