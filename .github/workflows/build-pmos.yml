@@ -89,26 +89,47 @@ jobs:
         pmbootstrap --version
 
         mkdir -p /tmp/pmbootstrap
+        mkdir -p /tmp/pmbootstrap.cfg
 
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config device xiaomi-equuleus
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config ui none
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config extra_space 2048
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config jobs $(nproc)
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config ccache true
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config mirror_alpine https://dl-cdn.alpinelinux.org/alpine
-        pmbootstrap --as-root --work=/tmp/pmbootstrap config mirror_pmos https://mirror.postmarketos.org
+        cat > /tmp/pmbootstrap.cfg << 'EOF'
+[pmbootstrap]
+version = 3
+work = /tmp/pmbootstrap
+jobs = 2
 
-        pmbootstrap --as-root --work=/tmp/pmbootstrap pull
+[ui]
+ui = none
+
+[device]
+device = xiaomi-equuleus
+kernel = postmarketos-qcom-sdm845
+
+[mirrors]
+pmos = https://mirror.postmarketos.org
+alpine = https://dl-cdn.alpinelinux.org/alpine
+
+[build]
+ccache = true
+offline = false
+
+[install]
+extra_space = 2048
+fde = false
+EOF
+
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg config jobs $(nproc)
+
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg pull
 
     - name: Build postmarketOS
       env:
         CI: "true"
       run: |
-        pmbootstrap --as-root --work=/tmp/pmbootstrap install --no-fde
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg install --no-fde
 
     - name: Export images
       run: |
-        pmbootstrap --as-root --work=/tmp/pmbootstrap export
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg export
         ls -la /tmp/pmbootstrap/chroot_native/home/pmos/rootfs
 
     - name: Upload artifacts
