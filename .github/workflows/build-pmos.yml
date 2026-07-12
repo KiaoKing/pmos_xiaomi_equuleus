@@ -91,7 +91,7 @@ jobs:
         rm -rf /tmp/pmbootstrap
         mkdir -p /home/runner/.config
 
-        printf "[pmbootstrap]\naports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports\nboot_size = 512\nbuild_default_device_arch = False\nbuild_pkgs_on_install = True\nccache_size = 5G\ndevice = xiaomi-equuleus\nextra_space = 2048\nhostname = xiaomi-equuleus\nis_default_channel = True\nchannel = master\njobs = 16\nkernel = postmarketos-qcom-sdm845\nkeymap = \nlocale = en_US.UTF-8\nqemu_redir_stdio = False\nssh_key_glob = ~/.ssh/id_*.pub\nssh_keys = False\nsudo_timer = False\nsystemd = default\ntimezone = Asia/Shanghai\nui = none\nui_extras = False\nuser = user\nwork = /tmp/pmbootstrap\n\n[mirrors]\nalpine = http://dl-cdn.alpinelinux.org/alpine/\npmaports = http://mirror.postmarketos.org/postmarketos/\n\n[providers]\n" > /home/runner/.config/pmbootstrap_v3.cfg
+        printf "[pmbootstrap]\naports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports\nboot_size = 512\nbuild_default_device_arch = False\nbuild_pkgs_on_install = True\nccache_size = 5G\ndevice = xiaomi-equuleus\nextra_space = 2048\nhostname = xiaomi-equuleus\nis_default_channel = True\nchannel = v25.12\njobs = 16\nkernel = postmarketos-qcom-sdm845\nkeymap = \nlocale = en_US.UTF-8\nqemu_redir_stdio = False\nssh_key_glob = ~/.ssh/id_*.pub\nssh_keys = False\nsudo_timer = False\nsystemd = default\ntimezone = Asia/Shanghai\nui = none\nui_extras = False\nuser = user\nwork = /tmp/pmbootstrap\n\n[mirrors]\nalpine = http://dl-cdn.alpinelinux.org/alpine/\npmaports = http://mirror.postmarketos.org/postmarketos/\n\n[providers]\n" > /home/runner/.config/pmbootstrap_v3.cfg
 
         cat /home/runner/.config/pmbootstrap_v3.cfg
         sudo chmod 777 /home/runner/.config/pmbootstrap_v3.cfg
@@ -110,13 +110,6 @@ jobs:
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
-
-        cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports
-        git log --oneline -20 -- device/mainline/linux-postmarketos-qcom-sdm845
-
-        git checkout 07b7a15b3c5c85474d2f62a3ef9293ecc3ab7dbf
-
-        pmbootstrap --as-root update
 
     - name: Build postmarketOS
       env:
