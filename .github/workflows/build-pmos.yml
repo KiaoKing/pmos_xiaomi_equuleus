@@ -106,34 +106,45 @@ jobs:
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
 
-    - name: Fix equuleus deviceinfo to use dipper dtb
-      env:
-        CI: "true"
-      run: |
-        DEVICE_DIR=$(find /tmp/pmaports -path "*device-xiaomi-equuleus*" -type d | head -1)
-        echo "Equuleus device directory: $DEVICE_DIR"
-
-        if [ -f "$DEVICE_DIR/deviceinfo" ]; then
-          echo "Current deviceinfo:"
-          cat "$DEVICE_DIR/deviceinfo"
-          echo ""
-          echo "=== Patching deviceinfo_dtb for equuleus ==="
-          sed -i 's|deviceinfo_dtb="qcom/sdm845-xiaomi-equuleus"|deviceinfo_dtb="qcom/sdm845-xiaomi-dipper"|' "$DEVICE_DIR/deviceinfo"
-          grep "deviceinfo_dtb" "$DEVICE_DIR/deviceinfo"
-        fi
-
-        DIPPER_DIR=$(find /tmp/pmaports -path "*device-xiaomi-dipper*" -type d | head -1)
-        echo "Dipper device directory: $DIPPER_DIR"
-        if [ -f "$DIPPER_DIR/deviceinfo" ]; then
-          echo "Dipper deviceinfo_dtb:"
-          grep "deviceinfo_dtb" "$DIPPER_DIR/deviceinfo"
-        fi
-
     - name: Build postmarketOS
       env:
         CI: "true"
       run: |
-        pmbootstrap --as-root install --password=147147 || (cat /tmp/pmbootstrap/log.txt && exit 1)
+        pmbootstrap --as-root install --password=147147 || (
+          echo "=== Install failed, attempting to fix device tree ==="
+          cat /tmp/pmbootstrap/log.txt | tail -50
+
+          echo "=== Checking deviceinfo in chroot ==="
+          cat /tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/etc/deviceinfo 2>/dev/null || echo "deviceinfo not found"
+          grep -r "deviceinfo_dtb" /tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/etc/ 2>/dev/null || echo "deviceinfo_dtb not found"
+
+          echo "=== Creating symlink for equuleus dtb ==="
+          DTB_DIR="/tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/boot/dtbs/qcom"
+          mkdir -p "$DTB_DIR"
+          ls -la "$DTB_DIR/" 2>/dev/null || echo "dtb directory not found"
+
+          if [ -f "$DTB_DIR/sdm845-xiaomi-dipper.dtb" ]; then
+            echo "Creating symlink: sdm845-xiaomi-equuleus.dtb -> sdm845-xiaomi-dipper.dtb"
+            ln -sf sdm845-xiaomi-dipper.dtb "$DTB_DIR/sdm845-xiaomi-equuleus.dtb"
+            ls -la "$DTB_DIR/" | grep equuleus
+          fi
+
+          echo "=== Checking usr/share/dtb ==="
+          USR_DTB="/tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/usr/share/dtb/qcom"
+          mkdir -p "$USR_DTB"
+          ls -la "$USR_DTB/" 2>/dev/null || echo "usr/share/dtb directory not found"
+
+          if [ -f "$USR_DTB/sdm845-xiaomi-dipper.dtb" ]; then
+            ln -sf sdm845-xiaomi-dipper.dtb "$USR_DTB/sdm845-xiaomi-equuleus.dtb"
+            ls -la "$USR_DTB/" | grep equuleus
+          fi
+
+          echo "=== Re-running mkinitfs ==="
+          pmbootstrap --as-root chroot --rootfs xiaomi-equuleus mkinitfs
+
+          echo "=== Continuing install ==="
+          pmbootstrap --as-root install --password=147147
+        )
 
     - name: Export images
       run: |
