@@ -90,16 +90,13 @@ jobs:
 
         mkdir -p /tmp/pmbootstrap
 
-        pmbootstrap --as-root --work=/tmp/pmbootstrap init \
-          --non-interactive \
-          --device=xiaomi-equuleus \
-          --mirror-alpine=https://dl-cdn.alpinelinux.org/alpine \
-          --mirror-pmOS=https://mirror.postmarketos.org \
-          --ui=none \
-          --extra-space=2048
-
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config device xiaomi-equuleus
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config ui none
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config extra_space 2048
         pmbootstrap --as-root --work=/tmp/pmbootstrap config jobs $(nproc)
         pmbootstrap --as-root --work=/tmp/pmbootstrap config ccache true
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config mirror_alpine https://dl-cdn.alpinelinux.org/alpine
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config mirror_pmos https://mirror.postmarketos.org
 
         pmbootstrap --as-root --work=/tmp/pmbootstrap pull
 
