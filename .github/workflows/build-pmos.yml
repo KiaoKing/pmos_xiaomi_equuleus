@@ -106,48 +106,23 @@ jobs:
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
 
-    - name: Patch kernel package for equuleus device tree
+    - name: Fix equuleus deviceinfo to use dipper dtb
       env:
         CI: "true"
       run: |
-        KERNEL_DIR=$(find /tmp/pmaports -path "*linux-postmarketos-qcom-sdm845*" -type d | head -1)
-        echo "Kernel directory: $KERNEL_DIR"
-        if [ -z "$KERNEL_DIR" ]; then
-          echo "Kernel package not found"
-          exit 1
+        DEVICE_DIR=$(find /tmp/pmaports -path "*device-xiaomi-dipper*" -type d | head -1)
+        echo "Device directory: $DEVICE_DIR"
+
+        if [ -f "$DEVICE_DIR/deviceinfo" ]; then
+          echo "Current deviceinfo:"
+          cat "$DEVICE_DIR/deviceinfo"
+          echo ""
+          echo "=== Patching deviceinfo_dtb for equuleus ==="
+          sed -i 's|deviceinfo_dtb="qcom/sdm845-xiaomi-equuleus"|deviceinfo_dtb="qcom/sdm845-xiaomi-dipper"|' "$DEVICE_DIR/deviceinfo"
+          grep "deviceinfo_dtb" "$DEVICE_DIR/deviceinfo"
         fi
 
-        cd $KERNEL_DIR
-        ls -la
-
-        cat APKBUILD | head -100
-
-        git clone https://gitlab.com/sdm845-mainline/linux.git /tmp/sdm845-mainline
-        cd /tmp/sdm845-mainline
-        git log --oneline -1
-
-        find . -name "*equuleus*" -o -name "*dipper*"
-
-        if [ -f "arch/arm64/boot/dts/qcom/sdm845-xiaomi-dipper.dts" ]; then
-          echo "Creating equuleus DTS from dipper"
-          cp arch/arm64/boot/dts/qcom/sdm845-xiaomi-dipper.dts arch/arm64/boot/dts/qcom/sdm845-xiaomi-equuleus.dts
-          sed -i 's/xiaomi,dipper/xiaomi,equuleus/g' arch/arm64/boot/dts/qcom/sdm845-xiaomi-equuleus.dts
-          sed -i 's/Xiaomi Mi 8/Xiaomi Mi 8 Pro/g' arch/arm64/boot/dts/qcom/sdm845-xiaomi-equuleus.dts
-        fi
-
-        if [ -f "arch/arm64/boot/dts/qcom/sdm845-xiaomi-equuleus.dts" ]; then
-          echo "Equuleus DTS file created"
-          head -20 arch/arm64/boot/dts/qcom/sdm845-xiaomi-equuleus.dts
-        fi
-
-        cd /tmp/pmaports
-        PKGBUILD_PATH=$(find . -path "*linux-postmarketos-qcom-sdm845*" -name "APKBUILD" | head -1)
-        echo "APKBUILD path: $PKGBUILD_PATH"
-
-        grep -n "dtb" $PKGBUILD_PATH || echo "No dtb line found"
-        grep -n "subpackages" $PKGBUILD_PATH || echo "No subpackages line found"
-
-- name: Build postmarketOS
+    - name: Build postmarketOS
       env:
         CI: "true"
       run: |
