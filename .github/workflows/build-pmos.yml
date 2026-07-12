@@ -96,15 +96,11 @@ jobs:
         cat /home/runner/.config/pmbootstrap_v3.cfg
 
         echo "=== VERIFYING CONFIGURATION ==="
-        pmbootstrap --as-root config channel
         pmbootstrap --as-root config mirrors.pmaports
         pmbootstrap --as-root config mirrors.alpine
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
-
-        echo "=== VERIFYING CHANNEL AFTER PULL ==="
-        pmbootstrap --as-root config channel
 
     - name: Build postmarketOS
       env:
