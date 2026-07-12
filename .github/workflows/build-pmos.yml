@@ -115,6 +115,7 @@ jobs:
       env:
         CI: "true"
       run: |
+        pmbootstrap --as-root chroot --rootfs=xiaomi-equuleus apk add mkbootimg
         pmbootstrap --as-root install --password=147147 || (cat /tmp/pmbootstrap/log.txt && exit 1)
 
     - name: Export images
