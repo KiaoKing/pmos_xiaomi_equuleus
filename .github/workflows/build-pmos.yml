@@ -94,14 +94,22 @@ jobs:
 
         git clone https://gitlab.postmarketos.org/postmarketOS/pmaports.git /tmp/pmaports-v25.12
         cd /tmp/pmaports-v25.12
-        git checkout v25.12
+        git fetch --tags
+        git tag -l "v25.12*"
+        git checkout v25.12 || git checkout v25.12.0 || git checkout 25.12 || exit 1
         git log --oneline -1
+        git rev-parse --abbrev-ref HEAD
 
         printf "[pmbootstrap]\naports = /tmp/pmaports-v25.12\nboot_size = 512\nbuild_default_device_arch = False\nbuild_pkgs_on_install = True\nccache_size = 5G\ndevice = xiaomi-equuleus\nextra_space = 2048\nhostname = xiaomi-equuleus\nis_default_channel = True\nchannel = v25.12\njobs = 16\nkernel = postmarketos-qcom-sdm845\nkeymap = \nlocale = en_US.UTF-8\nqemu_redir_stdio = False\nssh_key_glob = ~/.ssh/id_*.pub\nssh_keys = False\nsudo_timer = False\nsystemd = default\ntimezone = Asia/Shanghai\nui = none\nui_extras = False\nuser = user\nwork = /tmp/pmbootstrap\n\n[mirrors]\nalpine = http://dl-cdn.alpinelinux.org/alpine/\npmaports = http://mirror.postmarketos.org/postmarketos/\n\n[providers]\n" > /home/runner/.config/pmbootstrap_v3.cfg
 
         cat /home/runner/.config/pmbootstrap_v3.cfg
 
         yes "" | pmbootstrap --as-root --details-to-stdout init
+
+        cd /tmp/pmaports-v25.12
+        git checkout v25.12 || git checkout v25.12.0 || git checkout 25.12 || exit 1
+        git log --oneline -1
+        git rev-parse --abbrev-ref HEAD
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
