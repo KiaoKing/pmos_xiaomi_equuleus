@@ -114,30 +114,29 @@ jobs:
           echo "=== Install failed, attempting to fix device tree ==="
           cat /tmp/pmbootstrap/log.txt | tail -50
 
-          echo "=== Checking deviceinfo in chroot ==="
-          cat /tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/etc/deviceinfo 2>/dev/null || echo "deviceinfo not found"
-          grep -r "deviceinfo_dtb" /tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/etc/ 2>/dev/null || echo "deviceinfo_dtb not found"
-
-          echo "=== Creating symlink for equuleus dtb ==="
+          echo "=== Creating equuleus dtb from polaris ==="
           DTB_DIR="/tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/boot/dtbs/qcom"
-          mkdir -p "$DTB_DIR"
-          ls -la "$DTB_DIR/" 2>/dev/null || echo "dtb directory not found"
+          echo "Available dtbs:"
+          ls -la "$DTB_DIR/" 2>/dev/null
 
-          if [ -f "$DTB_DIR/sdm845-xiaomi-dipper.dtb" ]; then
-            echo "Creating symlink: sdm845-xiaomi-equuleus.dtb -> sdm845-xiaomi-dipper.dtb"
-            ln -sf sdm845-xiaomi-dipper.dtb "$DTB_DIR/sdm845-xiaomi-equuleus.dtb"
+          if [ -f "$DTB_DIR/sdm845-xiaomi-polaris.dtb" ]; then
+            echo "Copying polaris.dtb as equuleus.dtb..."
+            sudo cp "$DTB_DIR/sdm845-xiaomi-polaris.dtb" "$DTB_DIR/sdm845-xiaomi-equuleus.dtb"
             ls -la "$DTB_DIR/" | grep equuleus
+          elif [ -f "$DTB_DIR/sdm845-xiaomi-beryllium-ebbg.dtb" ]; then
+            echo "Copying beryllium.dtb as equuleus.dtb..."
+            sudo cp "$DTB_DIR/sdm845-xiaomi-beryllium-ebbg.dtb" "$DTB_DIR/sdm845-xiaomi-equuleus.dtb"
+            ls -la "$DTB_DIR/" | grep equuleus
+          else
+            echo "No suitable dtb found!"
+            exit 1
           fi
 
-          echo "=== Checking usr/share/dtb ==="
+          echo "=== Creating usr/share/dtb symlink ==="
           USR_DTB="/tmp/pmbootstrap/chroot_rootfs_xiaomi-equuleus/usr/share/dtb/qcom"
-          mkdir -p "$USR_DTB"
-          ls -la "$USR_DTB/" 2>/dev/null || echo "usr/share/dtb directory not found"
-
-          if [ -f "$USR_DTB/sdm845-xiaomi-dipper.dtb" ]; then
-            ln -sf sdm845-xiaomi-dipper.dtb "$USR_DTB/sdm845-xiaomi-equuleus.dtb"
-            ls -la "$USR_DTB/" | grep equuleus
-          fi
+          sudo mkdir -p "$USR_DTB"
+          sudo ln -sf "/boot/dtbs/qcom/sdm845-xiaomi-equuleus.dtb" "$USR_DTB/sdm845-xiaomi-equuleus.dtb"
+          ls -la "$USR_DTB/" | grep equuleus
 
           echo "=== Re-running mkinitfs ==="
           pmbootstrap --as-root chroot --rootfs xiaomi-equuleus mkinitfs
