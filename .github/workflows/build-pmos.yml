@@ -139,7 +139,7 @@ jobs:
           ls -la "$USR_DTB/" | grep equuleus
 
           echo "=== Re-running mkinitfs ==="
-          pmbootstrap --as-root chroot --rootfs xiaomi-equuleus mkinitfs
+          pmbootstrap --as-root chroot -r xiaomi-equuleus mkinitfs
 
           echo "=== Continuing install ==="
           pmbootstrap --as-root install --password=147147
