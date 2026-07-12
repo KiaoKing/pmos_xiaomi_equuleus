@@ -97,23 +97,7 @@ jobs:
 
         mkdir -p /tmp/pmbootstrap
 
-        pmbootstrap --as-root --details-to-stdout init <<EOF
-
-v25.12
-xiaomi
-equuleus
-user
-default
-default
-developer
-none
-default
-n
-none
-y
-en_US
-xiaomi-equuleus
-EOF
+        printf "\nv25.12\nxiaomi\nequuleus\nuser\ndefault\ndefault\ndeveloper\nnone\ndefault\nn\nnone\ny\nen_US\nxiaomi-equuleus\n" | pmbootstrap --as-root --details-to-stdout init
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
