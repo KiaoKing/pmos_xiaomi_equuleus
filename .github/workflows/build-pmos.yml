@@ -92,9 +92,40 @@ jobs:
         mkdir -p /home/runner/.config
 
         JOBS=$(nproc)
-        printf "[pmbootstrap]\nversion = 3\nwork = /tmp/pmbootstrap\njobs = %d\naports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports\n\n[ui]\nui = none\n\n[device]\ndevice = xiaomi-equuleus\nkernel = postmarketos-qcom-sdm845\nuser = user\n\n[mirrors]\npmaports = https://mirror.postmarketos.org\nsystemd = https://mirror.postmarketos.org/extra-repos/systemd\nalpine = https://dl-cdn.alpinelinux.org/alpine\n\n[build]\nccache = true\nbuild_pkgs_on_install = true\noffline = false\n\n[install]\nextra_space = 2048\nfde = false\n" "$JOBS" > /home/runner/.config/pmbootstrap_v3.cfg
+        cat > /home/runner/.config/pmbootstrap_v3.cfg << 'EOF'
+[pmbootstrap]
+aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+boot_size = 256
+build_default_device_arch = False
+build_pkgs_on_install = True
+ccache_size = 5G
+device = xiaomi-equuleus
+extra_packages = 
+extra_space = 2048
+hostname = xiaomi-equuleus
+is_default_channel = False
+jobs = 16
+kernel = postmarketos-qcom-sdm845
+keymap = 
+locale = en_US.UTF-8
+mirror_alpine = http://dl-cdn.alpinelinux.org/alpine/
+mirrors_postmarketos = http://mirror.postmarketos.org/
+qemu_redir_stdio = False
+ssh_key_glob = ~/.ssh/id_*.pub
+ssh_keys = False
+sudo_timer = False
+systemd = default
+timezone = Asia/Shanghai
+ui = none
+ui_extras = False
+user = user
+work = /tmp/pmbootstrap
+
+[providers]
+EOF
 
         cat /home/runner/.config/pmbootstrap_v3.cfg
+        sudo chmod 777 /home/runner/.config/pmbootstrap_v3.cfg
 
         yes '' | pmbootstrap --as-root --details-to-stdout init
 
@@ -102,8 +133,6 @@ jobs:
         pmbootstrap --as-root config ui none
         pmbootstrap --as-root config jobs $(nproc)
         pmbootstrap --as-root config channel edge
-        pmbootstrap --as-root config mirrors.alpine https://dl-cdn.alpinelinux.org/alpine
-        pmbootstrap --as-root config mirrors.pmaports https://mirror.postmarketos.org
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
