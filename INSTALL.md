@@ -45,25 +45,65 @@ fastboot reboot
 
 ## 首次启动
 
-### 通过 USB 网络连接
+### USB 网络连接说明
 
-1. 设备启动后，通过 USB 连接到电脑
-2. 检查网络接口：
+postmarketOS 默认会在设备端创建 USB 网络接口，使用固定 IP 地址 `172.16.42.1/24`，并运行 DHCP 服务器，为电脑分配 `172.16.42.2/24`。
 
-```bash
-ip addr show
+**设备端固定 IP**: `172.16.42.1`
+**电脑端获得 IP**: `172.16.42.2`（由设备的 DHCP 服务器分配）
+
+### Windows 系统连接步骤
+
+#### 1. 安装 USB 网络驱动
+
+Windows 11 自带 NCM 驱动，通常可以自动识别。
+
+Windows 10 需要安装 RNDIS 驱动：
+
+1. 设备启动后，用 USB 连接到电脑
+2. 打开 **设备管理器**
+3. 找到带黄色叹号的设备（可能显示为"未知设备"或"ADB Interface"）
+4. 右键选择 **更新驱动程序**
+5. 选择 **浏览我的计算机以查找驱动程序软件**
+6. 选择 **让我从计算机上的可用驱动程序列表中选取**
+7. 选择 **网络适配器**
+8. 厂商选择 **Microsoft**
+9. 型号选择 **Remote NDIS compatible device**（Windows 10 1709+ 可能显示为 "Remote NDIS based Internet Sharing Device"）
+10. 等待驱动安装完成
+
+#### 2. 配置网络适配器
+
+1. 打开 **控制面板 > 网络和共享中心 > 更改适配器设置**
+2. 找到新出现的网络适配器（通常命名为"以太网 X"）
+3. 右键选择 **属性**
+4. 双击 **Internet 协议版本 4 (TCP/IPv4)**
+5. 选择 **使用下面的 IP 地址**：
+   - IP 地址：`172.16.42.2`
+   - 子网掩码：`255.255.255.0`
+6. 点击 **确定**
+
+#### 3. 使用 SSH 连接
+
+Windows 10/11 内置 OpenSSH 客户端，直接在 PowerShell 或 CMD 中使用：
+
+```powershell
+ssh user@172.16.42.1
 ```
 
-3. 默认 IP 地址为 `172.16.42.15`，通过 SSH 连接：
+首次连接会提示确认主机密钥，输入 `yes` 确认。
+
+### Linux/macOS 系统连接步骤
+
+Linux 和 macOS 通常可以自动识别 USB 网络接口并获取 IP。
 
 ```bash
-ssh user@172.16.42.15
+ssh user@172.16.42.1
 ```
 
 ### 默认账号
 
 - 用户名：`user`
-- 密码：`123456`
+- 密码：`147147`
 
 > 建议首次登录后立即修改密码：`passwd`
 
@@ -93,26 +133,43 @@ sudo apk upgrade
 ### 安装额外软件包
 
 ```bash
-# 安装常用工具
-sudo apk add vim htop wget curl
-
-# 安装 SSH 服务器
-sudo apk add openssh
+sudo apk add vim htop wget curl openssh
 sudo rc-update add sshd
 sudo service sshd start
 ```
 
-## 故障排除
+### 配置 SSH 免密登录（推荐）
 
-### Fastboot 找不到设备
+在电脑上生成 SSH 密钥：
 
 ```bash
-# Linux
-sudo usermod -aG plugdev $USER
-sudo systemctl restart udev
+ssh-keygen -t ed25519
+```
 
-# Windows
-安装小米 USB 驱动
+将公钥复制到设备：
+
+```bash
+ssh-copy-id user@172.16.42.1
+```
+
+## 故障排除
+
+### Windows 驱动安装失败
+
+1. 如果设备显示为 ADB Interface，先卸载该驱动
+2. 在设备管理器中选择"Composite USB Device"
+3. 然后重新安装 RNDIS 驱动
+
+### USB 网络连接失败
+
+**Windows**：
+1. 确认驱动已正确安装
+2. 确认网络适配器 IP 设置为 `172.16.42.2`
+3. 尝试重启网络适配器
+
+**Linux**：
+```bash
+sudo dhcpcd usb0 --nohook ipv6
 ```
 
 ### 无法启动
@@ -128,20 +185,20 @@ fastboot flash boot boot.img
 fastboot flash userdata rootfs.img
 ```
 
-### USB 网络连接失败
+### SSH 连接被拒绝
+
+1. 确认设备已完全启动
+2. 确认 USB 网络已连接
+3. 在设备上检查 SSH 服务状态：
 
 ```bash
-# 在电脑上配置 USB 网络
-# Linux
-sudo ip addr add 172.16.42.1/24 dev usb0
-sudo ip link set usb0 up
-
-# Windows
-在设备管理器中配置 USB 网卡
+sudo service sshd status
 ```
 
 ## 参考链接
 
 - [postmarketOS Wiki - Xiaomi Mi 8](https://wiki.postmarketos.org/wiki/Xiaomi_Mi_8_(SDM845))
+- [postmarketOS Wiki - USB Network](https://wiki.postmarketos.org/wiki/USB_Network)
+- [postmarketOS Wiki - Windows FAQ](https://wiki.postmarketos.org/wiki/Windows_FAQ)
 - [pmbootstrap Documentation](https://docs.postmarketos.org/pmbootstrap/usage.html)
 - [pmaports Repository](https://gitlab.postmarketos.org/postmarketOS/pmaports)
