@@ -89,31 +89,7 @@ jobs:
         pmbootstrap --version
 
         mkdir -p /tmp/pmbootstrap
-        cat > /tmp/pmbootstrap.cfg << 'EOF'
-[pmbootstrap]
-version = 3
-work = /tmp/pmbootstrap
-jobs = 2
-
-[ui]
-ui = none
-
-[device]
-device = xiaomi-equuleus
-kernel = postmarketos-qcom-sdm845
-
-[mirrors]
-pmos = https://mirror.postmarketos.org
-alpine = https://dl-cdn.alpinelinux.org/alpine
-
-[build]
-ccache = true
-offline = false
-
-[install]
-extra_space = 2048
-fde = false
-EOF
+        printf "[pmbootstrap]\nversion = 3\nwork = /tmp/pmbootstrap\njobs = 2\n\n[ui]\nui = none\n\n[device]\ndevice = xiaomi-equuleus\nkernel = postmarketos-qcom-sdm845\n\n[mirrors]\npmos = https://mirror.postmarketos.org\nalpine = https://dl-cdn.alpinelinux.org/alpine\n\n[build]\nccache = true\noffline = false\n\n[install]\nextra_space = 2048\nfde = false\n" > /tmp/pmbootstrap.cfg
 
         pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg config jobs $(nproc)
 
