@@ -1,0 +1,128 @@
+name: Build postmarketOS for Xiaomi Mi 8 (equuleus)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 480
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y \
+          python3 \
+          python3-pip \
+          python3-venv \
+          git \
+          openssh-client \
+          rsync \
+          curl \
+          wget \
+          ca-certificates \
+          bzip2 \
+          xz-utils \
+          zstd \
+          file \
+          unzip \
+          cmake \
+          make \
+          gcc \
+          g++ \
+          pkg-config \
+          libssl-dev \
+          libffi-dev \
+          libncurses-dev \
+          libcap-dev \
+          libc6-dev \
+          qemu-user-static \
+          binfmt-support \
+          parted \
+          e2fsprogs \
+          dosfstools \
+          mtools \
+          sgdisk \
+          kmod \
+          u-boot-tools \
+          fastboot \
+          adb \
+          android-sdk-platform-tools-common
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install pmbootstrap
+      run: |
+        python -m pip install --upgrade pip
+        pip install pmbootstrap
+
+    - name: Initialize pmbootstrap
+      run: |
+        pmbootstrap --version
+
+        mkdir -p /tmp/pmbootstrap
+
+        cat > /tmp/pmbootstrap.cfg << EOF
+        [pmbootstrap]
+        version = 3
+        work = /tmp/pmbootstrap
+        jobs = $(nproc)
+
+        [ui]
+        ui = none
+
+        [device]
+        device = xiaomi-equuleus
+        kernel = postmarketos-qcom-sdm845
+
+        [mirrors]
+        pmos = https://mirror.postmarketos.org
+        alpine = https://dl-cdn.alpinelinux.org/alpine
+
+        [build]
+        ccache = true
+        offline = false
+
+        [install]
+        extra_space = 2048
+        fde = false
+        EOF
+
+        pmbootstrap --config=/tmp/pmbootstrap.cfg pull
+
+    - name: Build postmarketOS
+      run: |
+        pmbootstrap --config=/tmp/pmbootstrap.cfg install --no-fde
+
+    - name: Export images
+      run: |
+        pmbootstrap --config=/tmp/pmbootstrap.cfg export
+        ls -la /tmp/pmbootstrap/chroot_native/home/pmos/rootfs
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pmos-equuleus-images
+        path: |
+          /tmp/pmbootstrap/chroot_native/home/pmos/rootfs/*.img
+          /tmp/pmbootstrap/chroot_native/home/pmos/rootfs/*.zip
+          /tmp/pmbootstrap/chroot_native/home/pmos/rootfs/boot.img
+          /tmp/pmbootstrap/chroot_native/home/pmos/rootfs/initramfs
+        retention-days: 7
