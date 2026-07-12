@@ -89,19 +89,16 @@ jobs:
         pmbootstrap --version
 
         rm -rf /tmp/pmbootstrap
+        mkdir -p /home/runner/.config
 
-        printf "/tmp/pmbootstrap\n\nedge\nxiaomi\nequuleus\nnone\n\n\n\n" | pmbootstrap --as-root init
+        printf "[pmbootstrap]\nversion = 3\nwork = /tmp/pmbootstrap\njobs = %d\naports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports\n\n[ui]\nui = none\n\n[device]\ndevice = xiaomi-equuleus\nkernel = postmarketos-qcom-sdm845\nuser = user\n\n[mirrors]\naports = https://mirror.postmarketos.org\nalpine = https://dl-cdn.alpinelinux.org/alpine\n\n[build]\nccache = true\nbuild_pkgs_on_install = true\noffline = false\n\n[install]\nextra_space = 2048\nfde = false\n" "$(nproc)" > /home/runner/.config/pmbootstrap_v3.cfg
 
-        pmbootstrap --as-root config device xiaomi-equuleus
-        pmbootstrap --as-root config ui none
-        pmbootstrap --as-root config jobs $(nproc)
-        pmbootstrap --as-root config mirrors.alpine https://dl-cdn.alpinelinux.org/alpine/
-        pmbootstrap --as-root config mirrors.pmaports https://mirror.postmarketos.org/
+        cat /home/runner/.config/pmbootstrap_v3.cfg
+
+        yes '' | pmbootstrap --as-root --details-to-stdout init
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
-
-        pmbootstrap --as-root zap -hc
 
     - name: Build postmarketOS
       env:
