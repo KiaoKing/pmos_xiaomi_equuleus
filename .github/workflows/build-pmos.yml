@@ -96,7 +96,7 @@ jobs:
         cat /home/runner/.config/pmbootstrap_v3.cfg
         sudo chmod 777 /home/runner/.config/pmbootstrap_v3.cfg
 
-        yes '' | pmbootstrap --as-root --details-to-stdout --mirror-pmOS=http://mirror.postmarketos.org/postmarketos/ --mirror-alpine=http://dl-cdn.alpinelinux.org/alpine/ init
+        yes '' | pmbootstrap --as-root --details-to-stdout init
 
         pmbootstrap --as-root config device xiaomi-equuleus
         pmbootstrap --as-root config ui none
