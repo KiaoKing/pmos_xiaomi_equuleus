@@ -61,7 +61,14 @@ jobs:
           u-boot-tools \
           fastboot \
           adb \
-          android-sdk-platform-tools-common
+          android-sdk-platform-tools-common \
+          squashfs-tools \
+          libarchive-tools \
+          bsdmainutils \
+          procps \
+          iproute2 \
+          iptables \
+          iputils-ping
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -74,46 +81,35 @@ jobs:
         pip install pmbootstrap
 
     - name: Initialize pmbootstrap
+      env:
+        CI: "true"
       run: |
         pmbootstrap --version
 
         mkdir -p /tmp/pmbootstrap
 
-        cat > /tmp/pmbootstrap.cfg << EOF
-        [pmbootstrap]
-        version = 3
-        work = /tmp/pmbootstrap
-        jobs = $(nproc)
+        pmbootstrap --as-root --work=/tmp/pmbootstrap init \
+          --non-interactive \
+          --device=xiaomi-equuleus \
+          --mirror-alpine=https://dl-cdn.alpinelinux.org/alpine \
+          --mirror-pmOS=https://mirror.postmarketos.org \
+          --ui=none \
+          --extra-space=2048
 
-        [ui]
-        ui = none
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config jobs $(nproc)
+        pmbootstrap --as-root --work=/tmp/pmbootstrap config ccache true
 
-        [device]
-        device = xiaomi-equuleus
-        kernel = postmarketos-qcom-sdm845
-
-        [mirrors]
-        pmos = https://mirror.postmarketos.org
-        alpine = https://dl-cdn.alpinelinux.org/alpine
-
-        [build]
-        ccache = true
-        offline = false
-
-        [install]
-        extra_space = 2048
-        fde = false
-        EOF
-
-        pmbootstrap --config=/tmp/pmbootstrap.cfg pull
+        pmbootstrap --as-root --work=/tmp/pmbootstrap pull
 
     - name: Build postmarketOS
+      env:
+        CI: "true"
       run: |
-        pmbootstrap --config=/tmp/pmbootstrap.cfg install --no-fde
+        pmbootstrap --as-root --work=/tmp/pmbootstrap install --no-fde
 
     - name: Export images
       run: |
-        pmbootstrap --config=/tmp/pmbootstrap.cfg export
+        pmbootstrap --as-root --work=/tmp/pmbootstrap export
         ls -la /tmp/pmbootstrap/chroot_native/home/pmos/rootfs
 
     - name: Upload artifacts
