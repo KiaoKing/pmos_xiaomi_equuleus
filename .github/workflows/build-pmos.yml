@@ -110,8 +110,8 @@ jobs:
       env:
         CI: "true"
       run: |
-        DEVICE_DIR=$(find /tmp/pmaports -path "*device-xiaomi-dipper*" -type d | head -1)
-        echo "Device directory: $DEVICE_DIR"
+        DEVICE_DIR=$(find /tmp/pmaports -path "*device-xiaomi-equuleus*" -type d | head -1)
+        echo "Equuleus device directory: $DEVICE_DIR"
 
         if [ -f "$DEVICE_DIR/deviceinfo" ]; then
           echo "Current deviceinfo:"
@@ -120,6 +120,13 @@ jobs:
           echo "=== Patching deviceinfo_dtb for equuleus ==="
           sed -i 's|deviceinfo_dtb="qcom/sdm845-xiaomi-equuleus"|deviceinfo_dtb="qcom/sdm845-xiaomi-dipper"|' "$DEVICE_DIR/deviceinfo"
           grep "deviceinfo_dtb" "$DEVICE_DIR/deviceinfo"
+        fi
+
+        DIPPER_DIR=$(find /tmp/pmaports -path "*device-xiaomi-dipper*" -type d | head -1)
+        echo "Dipper device directory: $DIPPER_DIR"
+        if [ -f "$DIPPER_DIR/deviceinfo" ]; then
+          echo "Dipper deviceinfo_dtb:"
+          grep "deviceinfo_dtb" "$DIPPER_DIR/deviceinfo"
         fi
 
     - name: Build postmarketOS
