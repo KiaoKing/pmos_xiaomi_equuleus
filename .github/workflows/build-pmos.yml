@@ -56,7 +56,7 @@ jobs:
           e2fsprogs \
           dosfstools \
           mtools \
-          sgdisk \
+          gdisk \
           kmod \
           u-boot-tools \
           fastboot \
