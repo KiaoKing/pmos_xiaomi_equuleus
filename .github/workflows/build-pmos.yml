@@ -95,9 +95,25 @@ jobs:
 
         cat /home/runner/.config/pmbootstrap_v3.cfg
 
-        echo "=== VERIFYING CONFIGURATION ==="
-        pmbootstrap --as-root config mirrors.pmaports
-        pmbootstrap --as-root config mirrors.alpine
+        mkdir -p /tmp/pmbootstrap
+
+        pmbootstrap --as-root --details-to-stdout init <<EOF
+
+v25.12
+xiaomi
+equuleus
+user
+default
+default
+developer
+none
+default
+n
+none
+y
+en_US
+xiaomi-equuleus
+EOF
 
         pmbootstrap --as-root update
         pmbootstrap --as-root pull
