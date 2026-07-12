@@ -94,6 +94,8 @@ jobs:
 
         yes "" | pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg init
 
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg config device xiaomi-equuleus
+        pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg config ui none
         pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg config jobs $(nproc)
 
         pmbootstrap --as-root --config=/tmp/pmbootstrap.cfg pull
